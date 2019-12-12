@@ -1,7 +1,11 @@
-import  {GraphQLServer} from 'graphql-yoga'
+import  {GraphQLServer, PubSub} from 'graphql-yoga'
 import { MongoClient, ObjectID} from "mongodb";
 import "babel-polyfill";
-import * as uuid from 'uuid'
+
+import Match from './resolvers/Match';
+import Query from './resolvers/Query';
+import Mutation from './resolvers/Mutation';
+import Subscription from './resolvers/Subscription';
 
 const usr = "andresBM";
 const pwd = "qwerty123";
@@ -31,115 +35,21 @@ const connectToDb = async function(usr, pwd, url) {
  */
 
 const runGraphQLServer = function(context){
-const typeDefs = `
-    type Team{
-        name: String!
-        _id: ID!  
-    }
-    type Match{
-        team:[Team]!
-        date: Int!
-        result: [Int]!
-        status: Int!
-        _id: ID!
-       
-    }
-    type Query{
-        getTeams: [Team]
-    }
-    type Mutation{
-        addTeam (name: String!): Team!
-        addMatch (team: [ID!]!, result: [Int]!, status: Int!): Match!
-        updateResult (id: ID!, result: [Int]!): String!
-    }
-`
 const resolvers = {
-    Match:{
-        team: async (parent, args, ctx, info) => {
-            const { client } = ctx;
-
-            const db = client.db("League");
-            const collection = db.collection("Teams");
-            const teamsArray = parent.team.map(obj => ObjectID(obj));
-            
-            const result = await collection.find({_id:{$in: teamsArray}});
-            return result.toArray();
-        }
-
-    },
-    Query:{
-       getTeams : async (parent, args, ctx, info) => {
-          const { client } = ctx;
-          
-          const db = client.db ("League"); 
-          const collection = db.collection ("Teams");
-
-          const result = await collection.find({}).toArray();
-
-          return result;
-       
-       }
-    },
-    Mutation:{
-
-        addTeam: async (parent, args, ctx, info) =>{
-            const { name } = args;
-            const { client } = ctx;
-            
-            const db = client.db("League");
-            const collection = db.collection ("Teams");
-
-            const result = await collection.findOne({name});
-
-            if(!result){
-                const object = await collection.insertOne({name});
-                return object.ops[0];
-            }else{
-                return undefined;
-            }  
-        },
-
-        addMatch: async (parent, args, ctx, info) => {
-            const { team,  result, status} = args;
-            const { client } = ctx;
-            const date = new Date().getDate();
-
-            const db = client.db("League");
-            const collection = db.collection("Matchs");
-
-            const object = await collection.insertOne({team: team.map(obj => ObjectID(obj)), date, result, status});
-            return object.ops[0];
-        },
-
-        updateResult : async (parent, args, ctx, info) => {
-            const resultID = args.id;
-            const { client } = ctx;
-
-            const message = "Update sucessfuly";
-            const db = client.db("League");
-            const collection = db.collection("Matchs");
-
-            let jsonUpdate;
-
-            if(args.result){
-                jsonUpdate = {
-                    result: args.result,
-                    ...jsonUpdate
-                }
-            }
-            const result = await collection.updateOne({_id: ObjectID(resultID)}, {$set: jsonUpdate});
-            return message;
-        }  
-    }
+    Match,
+    Query,
+    Mutation,
+    Subscription
 }
-const server = new GraphQLServer({typeDefs, resolvers, context});
+const server = new GraphQLServer({typeDefs: './src/schema.graphql', resolvers, context});
 server.start(() => console.log("Server started"));
 };
 const runApp = async function(){
     const client = await connectToDb(usr, pwd, url);
     console.log("Connect to Mongo DB");
+    const pubsub = new PubSub();
 
-    runGraphQLServer({client});
+    runGraphQLServer({client, pubsub});
 };
 
 runApp();

@@ -1,5 +1,6 @@
 import { ObjectID} from "mongodb";
 
+
 const Mutation = { 
 
     addTeam: async (parent, args, ctx, info) =>{
@@ -37,9 +38,8 @@ const Mutation = {
 
     updateResult : async (parent, args, ctx, info) => {
         const resultID = args.id;
-        const { client } = ctx;
+        const { client, pubsub } = ctx;
 
-        const message = "Update sucessfuly";
         const db = client.db("League");
         const collection = db.collection("Matchs");
 
@@ -51,33 +51,33 @@ const Mutation = {
                 ...jsonUpdate
             }
         }
-        await collection.updateOne({_id: ObjectID(resultID)}, {$set: jsonUpdate});
-        return message;
+        const result = await collection.findOneAndUpdate({_id: ObjectID(resultID)}, {$set: jsonUpdate},{returnOriginal:false});
+       
+        pubsub.publish(resultID, {
+            matchUpdate: result.value
+          });
+
+        return result.value;
     },
     
     startMatch: async (parent, args, ctx, info) => {
-        const statusID = args.id;
+        const { _id, status } = args;
         const { client } = ctx;
-
-        const message = "Update sucessfuly";
         const db = client.db("League");
-        const collection = db.collection("Matchs");
-
-        if(status >= 0 && status <= 2){
-
-            let jsonUpdate;
-
-            if(args.status){
-                jsonUpdate = {
-                    status: args.status,
-                    ...jsonUpdate
-                }
-            }
-            await collection.updateOne({_id: ObjectID(statusID)}, {$set: jsonUpdate});
-            return message;
-        }else{
-            return new Error("Insert correct status");
+        const collection = db.collection("Matches");
+        if (status >= 0 && status <= 2) {
+          const updated = await collection.findOneAndUpdate(
+            { _id: ObjectID(_id) },
+            { $set: { status } },
+            { returnOriginal: false }
+          );
+          return updated.value;
+        } else {
+          return new Error(
+            "Insert correct status (0: not started, 1: playing, 2: finished)"
+          );
         }
+
     }
 }
     export {Mutation as default};
