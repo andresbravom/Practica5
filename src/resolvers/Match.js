@@ -9,6 +9,18 @@ const Match = {
         
         const result = await collection.find({_id:{$in: teamsArray}});
         return result.toArray();
+    },
+    status: (parent, args, ctx, info ) => {
+        const status = parent.status;
+        if(status === 0){
+            return "Not started";
+        } 
+        if(status === 1){
+            return "Playing";
+        } 
+        if(status === 2){
+            return "Finished";
+        } 
     }
 }
 export {Match as default};

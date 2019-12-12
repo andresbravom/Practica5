@@ -26,9 +26,13 @@ const Mutation = {
 
         const db = client.db("League");
         const collection = db.collection("Matchs");
+        if(status >= 0 && status <= 2){
 
         const object = await collection.insertOne({team: team.map(obj => ObjectID(obj)), date, result, status});
         return object.ops[0];
+        }else{
+            return new Error("Insert correct status");
+        }
     },
 
     updateResult : async (parent, args, ctx, info) => {
@@ -59,16 +63,21 @@ const Mutation = {
         const db = client.db("League");
         const collection = db.collection("Matchs");
 
-        let jsonUpdate;
+        if(status >= 0 && status <= 2){
 
-        if(args.status){
-            jsonUpdate = {
-                status: args.status,
-                ...jsonUpdate
+            let jsonUpdate;
+
+            if(args.status){
+                jsonUpdate = {
+                    status: args.status,
+                    ...jsonUpdate
+                }
             }
+            await collection.updateOne({_id: ObjectID(statusID)}, {$set: jsonUpdate});
+            return message;
+        }else{
+            return new Error("Insert correct status");
         }
-        await collection.updateOne({_id: ObjectID(statusID)}, {$set: jsonUpdate});
-        return message;
     }
 }
     export {Mutation as default};
