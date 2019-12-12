@@ -61,23 +61,30 @@ const Mutation = {
     },
     
     startMatch: async (parent, args, ctx, info) => {
-        const { _id, status } = args;
+        const statusID = args.id;
         const { client } = ctx;
-        const db = client.db("League");
-        const collection = db.collection("Matches");
-        if (status >= 0 && status <= 2) {
-          const updated = await collection.findOneAndUpdate(
-            { _id: ObjectID(_id) },
-            { $set: { status } },
-            { returnOriginal: false }
-          );
-          return updated.value;
-        } else {
-          return new Error(
-            "Insert correct status (0: not started, 1: playing, 2: finished)"
-          );
-        }
 
-    }
+        const message = "Update sucessfuly";
+        const db = client.db("League");
+        const collection = db.collection("Matchs");
+
+        if(status >= 0 && status <= 2){
+
+            let jsonUpdate;
+
+            if(args.status){
+                jsonUpdate = {
+                    status: args.status,
+                    ...jsonUpdate
+                }
+            }
+            await collection.updateOne({_id: ObjectID(statusID)}, {$set: jsonUpdate});
+            return message;
+        }else{
+            return new Error("Insert correct status");
+        }
+    },
+
+
 }
     export {Mutation as default};
