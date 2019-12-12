@@ -53,37 +53,20 @@ const typeDefs = `
     }
 `
 const resolvers = {
-    // User:{
-    //     bills: async(parent, args, ctx, info) => {
-    //         const user = ObjectID(parent._id);
-    //         const{ client } = ctx;
+    Match:{
+        team: async (parent, args, ctx, info) => {
+            const { client } = ctx;
 
-    //         const db = client.db("API");
-    //         const collection = db.collection("Bills");
-    //         const result = await collection.find({user}).toArray();
-    //         return result;
-    //     }, 
-    //     _id(parent, args, ctx, info){
-    //         const result = parent._id;
-    //         return result;
-    //     }
-    // },
+            const db = client.db("League");
+            const collection = db.collection("Teams");
+            const teamsArray = parent.team.map(obj => ObjectID(obj));
+            console.log(teamsArray);
+            
+            const result = await collection.find({_id:{$in: teamsArray}});
+            return result.toArray();
+        }
 
-    // Bill:{
-    //     user: async(parent, args, ctx, info) =>{
-    //         const userID = parent.user;
-    //         const { client } = ctx;
-
-    //         const db = client.db("API");
-    //         const collection = db.collection("Users");
-    //         const result = await collection.findOne({_id: ObjectID(userID)});
-    //         return result;
-    //     }, 
-    //     _id(parent, args, ctx, info){
-    //         const result = parent._id;
-    //         return result;
-    //     }
-    // },
+    },
     Query:{
        getTeams : async (parent, args, ctx, info) => {
           const { client } = ctx;
@@ -122,125 +105,17 @@ const resolvers = {
             const date = new Date().getDate();
 
             const db = client.db("League");
+            
             const collection = db.collection("Matchs");
 
             const object = await collection.insertOne({team: team.map(obj => ObjectID(obj)), date, result, status});
+            console.log(object.ops[0]);
             return object.ops[0];
         }
-        // addUser: async(parent, args, ctx, info) => {
-        //     const { userName, password } = args;
-        //     const { client } = ctx;
+       
 
-        //     const db = client.db("API");
-        //     const collection = db.collection("Users");
-  
-        //     const result = await collection.findOne({userName});
-        //     if (!result){
-        //         const object = await collection.insertOne({userName, password});
-        //         return object.ops[0];
-        //     }else{
-        //         return null;
-        //     }
-        // },
-
-        // addBill: async(parent, args, ctx, info) => {
-        //     const { userName, token, amount, concept, date } = args;
-           
-        //     const { client } = ctx;
-          
-
-        //     const db = client.db("API");
-        //     const collection = db.collection("Bills");
-        //     const collectionUsers = db.collection("Users");
-
-          
-        //     const result = await collectionUsers.findOne({token, userName});
         
-
-        //     if(result){
-        //         const user = result._id;
-          
-        //         const object = await collection.insertOne({user, amount, concept, date});
-        //         return object.ops[0];
-        //     }else{
-        //         return null;
-        //     }         
-        // },
-
-        // login: async(parent, args, ctx, info) => {
-        //     const { userName, password } = args;
-        //     const { client } = ctx;
-           
-
-        //     const db = client.db("API");
-        //     const collection = db.collection("Users");
-
-        //     const result = await collection.findOne({userName, password});
-
-        //     if(result){
-        //        const token = uuid.v4();
-        //        await collection.updateOne({userName: userName}, {$set: {token: token}});
-        //        return token;
-        //     }else{
-        //         return null;
-        //     }
-        // },
-        // logout: async(parent, args, ctx, info) =>{
-        //     const { userName, token } = args;
-        //     const { client } = ctx;
-        //     const newToken = null;
-
-        //     const db = client.db("API");
-        //     const collection = db.collection("Users");
-
-        //     const result = await collection.findOne({userName, token});
-
-        //     if(result){
-        //         await collection.updateOne({userName: userName}, {$set: {token: newToken}});
-        //         return token;
-        //     }else{
-        //         return null;
-        //     }  
-        // }, 
-        // removeUser: async(parent, args, ctx, info) =>{
-        //     const { userName, token } = args;
-        //     const { client } = ctx;
-
-        //     const message = "Remove successfuly";
-        //     const db = client.db("API");
-        //     const collectionUsers = db.collection("Users");
-        //     const collectionBills = db.collection("Bills");
-
-        //     const result = await collectionUsers.findOne({userName, token});
-        //     if(result){
-        //         const removeBills = () => {
-        //             return new Promise((resolve, reject)=> {
-        //                 const object = collectionBills.deleteMany({user: ObjectID(result._id)});
-        //                 resolve (object);
-        //             }
-        //         )};
-
-        //         const deleteUser = () =>{
-        //             return new Promise((resolve, reject) =>{
-        //                 const result = collectionUsers.deleteOne({userName});
-        //                 resolve (result);
-        //             }
-        //         )};
-
-        //         (async function(){
-        //             const asyncFunctions = [
-        //                 removeBills(),
-        //                 deleteUser()
-        //             ];
-        //             await Promise.all(asyncFunctions);
-        //         })();
-        //         return message;
-        //     }else{
-        //         return null;
-        //     }
-
-            
-        // }
+        
     }
 }
 const server = new GraphQLServer({typeDefs, resolvers, context});
