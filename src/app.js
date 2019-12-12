@@ -48,8 +48,9 @@ const typeDefs = `
         getTeams: [Team]
     }
     type Mutation{
-        addTeam(name: String!): Team!
-        addMatch(team: [ID!]!, result: [Int]!, status: Int!): Match!
+        addTeam (name: String!): Team!
+        addMatch (team: [ID!]!, result: [Int]!, status: Int!): Match!
+        updateResult (id: ID!, result: [Int]!): String!
     }
 `
 const resolvers = {
@@ -60,7 +61,6 @@ const resolvers = {
             const db = client.db("League");
             const collection = db.collection("Teams");
             const teamsArray = parent.team.map(obj => ObjectID(obj));
-            console.log(teamsArray);
             
             const result = await collection.find({_id:{$in: teamsArray}});
             return result.toArray();
@@ -105,17 +105,31 @@ const resolvers = {
             const date = new Date().getDate();
 
             const db = client.db("League");
-            
             const collection = db.collection("Matchs");
 
             const object = await collection.insertOne({team: team.map(obj => ObjectID(obj)), date, result, status});
-            console.log(object.ops[0]);
             return object.ops[0];
-        }
-       
+        },
 
-        
-        
+        updateResult : async (parent, args, ctx, info) => {
+            const resultID = args.id;
+            const { client } = ctx;
+
+            const message = "Update sucessfuly";
+            const db = client.db("League");
+            const collection = db.collection("Matchs");
+
+            let jsonUpdate;
+
+            if(args.result){
+                jsonUpdate = {
+                    result: args.result,
+                    ...jsonUpdate
+                }
+            }
+            const result = await collection.updateOne({_id: ObjectID(resultID)}, {$set: jsonUpdate});
+            return message;
+        }  
     }
 }
 const server = new GraphQLServer({typeDefs, resolvers, context});
