@@ -62,7 +62,7 @@ const Mutation = {
     
     startMatch: async (parent, args, ctx, info) => {
         const { id, status } = args;
-        const { client } = ctx;
+        const { client, pubsub } = ctx;
 
         const db = client.db("League");
         const collection = db.collection("Matchs");
@@ -73,6 +73,10 @@ const Mutation = {
             { $set: { status } },
             { returnOriginal: false }
           );
+     
+          pubsub.publish(id, {
+            matchUpdate: updated.value
+          });
           return updated.value;
         } else {
           throw new Error(
