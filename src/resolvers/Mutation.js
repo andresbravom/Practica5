@@ -1,3 +1,5 @@
+import { ObjectID} from "mongodb";
+
 const Mutation = { 
 
     addTeam: async (parent, args, ctx, info) =>{
@@ -45,8 +47,28 @@ const Mutation = {
                 ...jsonUpdate
             }
         }
-        const result = await collection.updateOne({_id: ObjectID(resultID)}, {$set: jsonUpdate});
+        await collection.updateOne({_id: ObjectID(resultID)}, {$set: jsonUpdate});
         return message;
-    }  
+    },
+    
+    startMatch: async (parent, args, ctx, info) => {
+        const statusID = args.id;
+        const { client } = ctx;
+
+        const message = "Update sucessfuly";
+        const db = client.db("League");
+        const collection = db.collection("Matchs");
+
+        let jsonUpdate;
+
+        if(args.status){
+            jsonUpdate = {
+                status: args.status,
+                ...jsonUpdate
+            }
+        }
+        await collection.updateOne({_id: ObjectID(statusID)}, {$set: jsonUpdate});
+        return message;
+    }
 }
     export {Mutation as default};
