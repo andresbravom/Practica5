@@ -1,4 +1,4 @@
-# Soccer App  🔐
+# Soccer App ⚽
 Soccer app is a Node.js app. The user can subscribe to match or teams,to receive information.
 ## Install 🛠️
 To use this app it is necessary to install:
@@ -44,7 +44,7 @@ addMatch
 updateResult
 startMatch
 ```
-#### AddTeam 👨🏻‍💼
+#### AddTeam 🏃🏃🏻🏃🏽🏃🏾
 ```js
   mutation{
   addTeam(name:"FC Barcelona"){
@@ -53,8 +53,7 @@ startMatch
   }
 }
 ```
-#### AddMatch 🧾
-To add bills is it necesary put the next fields
+#### AddMatch  🏟️
 
 ```js
   mutation{
@@ -69,7 +68,7 @@ To add bills is it necesary put the next fields
   }
 }
 ```
-#### updateResult 🧾
+#### updateResult 0️⃣ ➖ 1️⃣
 ```js
   mutation{
   updateResult(id: "5df3d01fae1160048f183883", result:[3,3]){
@@ -82,7 +81,7 @@ To add bills is it necesary put the next fields
   }
 }
 ```
-#### startMatch🧾
+#### startMatch 🔄
 ```js
   mutation{
   startMatch(id: "5df3d01fae1160048f183883", status: 3){
@@ -178,6 +177,77 @@ To add bills is it necesary put the next fields
 }
 ```
 
-## Mongo DB 📸
-In the following images you can see the database of the application distributed in 3 collections
+### Subscription  ✅
+```js
+matchUpdate
+teamUpdate
+```
+#### matchUpdate
+```js
+ subscription{
+  matchUpdate(id: "5df3d01fae1160048f183883"){
+    team{
+      name
+    }
+    result
+  }
+}
+```
+#### teamUpdte
+```js
+ mutation{
+  startMatch(id: "5df3d01fae1160048f183883", status: 1){
+    team{
+      name
+    }
+    result
+    status
+    _id
+  }
+}
+```
+#### OUTPUT
+* matchUpdate
+```js
+ {
+  "data": {
+    "matchUpdate": {
+      "team": [
+        {
+          "name": "Rayo Vallecano de Madrid"
+        },
+        {
+          "name": "FC Barcelona"
+        }
+      ],
+      "result": [
+        4,
+        3
+      ]
+    }
+  }
+}
+```
+* teamUpdate
+```js
+{
+  "data": {
+    "matchUpdate": {
+      "team": [
+        {
+          "name": "Rayo Vallecano de Madrid"
+        },
+        {
+          "name": "FC Barcelona"
+        }
+      ],
+      "result": [
+        4,
+        3
+      ]
+    }
+  }
+}
+```
+
 
