@@ -51,7 +51,7 @@ const Mutation = {
                 ...jsonUpdate
             }
         }
-        const result = await collection.findOneAndUpdate({_id: ObjectID(resultID)}, {$set: jsonUpdate},{returnOriginal:false});
+        const result = await collection.findOneAndUpdate({_id: ObjectID(resultID)}, {$set: jsonUpdate}, {returnOriginal:false});
        
         pubsub.publish(resultID, {
             matchUpdate: result.value
@@ -61,28 +61,27 @@ const Mutation = {
     },
     
     startMatch: async (parent, args, ctx, info) => {
-        const { id, status } = args;
-        const { client, pubsub } = ctx;
+        const statusID = args.id;
+        const {client,pubsub} = ctx;
 
         const db = client.db("League");
         const collection = db.collection("Matchs");
-        
-        if (status >= 0 && status <= 2) {
-          const updated = await collection.findOneAndUpdate(
-            { _id: ObjectID(id) },
-            { $set: { status } },
-            { returnOriginal: false }
-          );
-     
-          pubsub.publish(id, {
-            matchUpdate: updated.value
-          });
-          return updated.value;
-        } else {
-          throw new Error(
-            "Insert correct status (0: not started, 1: playing, 2: finished)"
-          );
+
+        let jsonUpdate;
+
+        if(args.status){
+          jsonUpdate = {
+            status: args.status,
+            ...jsonUpdate
+          }
         }
+        const result = await collection.findOneAndUpdate({_id: ObjectID(statusID)}, {$set: jsonUpdate}, {returnOriginal:false});
+        
+        pubsub.publish(statusID, {
+            matchUpdate: result.value
+        });
+
+        return result.value;
     }
 }
     export {Mutation as default};
