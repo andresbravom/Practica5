@@ -24,7 +24,5 @@ type Mutation{
 
 type Subscription {
     matchUpdate(id: ID!): Match!
-    
+    teamUpdate(id: ID!): Match!
 }
-
-

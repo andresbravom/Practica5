@@ -1,6 +1,5 @@
 import { ObjectID} from "mongodb";
 
-
 const Mutation = { 
 
     addTeam: async (parent, args, ctx, info) =>{
@@ -27,7 +26,7 @@ const Mutation = {
 
         const db = client.db("League");
         const collection = db.collection("Matchs");
-        if(status >= 0 && status <= 2){
+        if(status >= 1 && status <= 3){
 
         const object = await collection.insertOne({team: team.map(obj => ObjectID(obj)), date, result, status});
         return object.ops[0];
@@ -53,10 +52,19 @@ const Mutation = {
         }
         const result = await collection.findOneAndUpdate({_id: ObjectID(resultID)}, {$set: jsonUpdate}, {returnOriginal:false});
        
-        pubsub.publish(resultID, {
-            matchUpdate: result.value
-          });
+        pubsub.publish(`match${resultID}`, {
+          matchUpdate: result.value
+        });
 
+        pubsub.publish(`team${result.value.team[0]}`,{
+          teamUpdate: result.value
+        });
+
+         pubsub.publish(`team${result.value.team[1]}`,{
+          teamUpdate: result.value
+        });
+        
+        
         return result.value;
     },
     
@@ -71,17 +79,26 @@ const Mutation = {
 
         if(args.status){
           jsonUpdate = {
-            status: args.status,
-            ...jsonUpdate
+            status: args.status
           }
         }
         const result = await collection.findOneAndUpdate({_id: ObjectID(statusID)}, {$set: jsonUpdate}, {returnOriginal:false});
         
-        pubsub.publish(statusID, {
+
+        pubsub.publish(`match${statusID}`, {
             matchUpdate: result.value
+        });
+
+        pubsub.publish(`team${result.value.team[0]}`,{
+          teamUpdate: result.value
+        });
+
+         pubsub.publish(`team${result.value.team[1]}`,{
+          teamUpdate: result.value
         });
 
         return result.value;
     }
-}
-    export {Mutation as default};
+};
+
+export {Mutation as default};

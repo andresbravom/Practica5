@@ -3,7 +3,14 @@ const Subscription = {
         subscribe(parent, args, ctx, info){
             const {id} = args;
             const {pubsub} = ctx;
-            return pubsub.asyncIterator(id);
+            return pubsub.asyncIterator(`match${id}`);
+        }
+    },
+    teamUpdate: {
+        subscribe(parent, args, ctx, info){
+            const {id} = args;
+            const {pubsub} = ctx;
+            return pubsub.asyncIterator(`team${id}`);
         }
     }
 }
